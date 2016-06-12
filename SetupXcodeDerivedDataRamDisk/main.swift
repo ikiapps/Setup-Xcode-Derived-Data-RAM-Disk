@@ -25,14 +25,24 @@ import Foundation
 /**
 Create a Derived Data RAM disk for use by Xcode.
 The regex matching is designed for English language systems.
-Tested with OS X 10.11.4 (El Capitan) and Swift 2.2.
+Tested with OS X 10.11.5 (El Capitan) and Swift 2.2.
 
 The disk is mounted into the default path for Xcode's Derived Data path and will be used automatically
 by Xcode if the path is correct for the one set in Xcode's preferences.
  
-This script can be added as startup agent in ~/Library/LaunchAgents.
- 
-Here is the content of an example plist that would have the RAM disk created at startup.
+This script can be added as a startup agent inside ~/Library/LaunchAgents.
+
+** BE SURE TO CHANGE USERNAME BELOW TO MATCH YOUR USERNAME. **
+
+The path below refers to a bin directory contained in your home directory.
+This folder needs to be created if it does not already exist.
+
+This script copied into that directory will need to have execute (+x) permissions.
+The property list inside LaunchAgents only requires read (+r) permissions to work.
+It is sufficient to simply copy the property list into the LaunchAgents directory.
+The directory itself will have to be created if it does not already exist.
+
+Here is the content of an example plist (property list) that will have the RAM disk created at startup.
 
 filename: com.ikiapps.setupXcodeDerivedDataRamDisk.plist
 -------------------------------------------------------------------
@@ -41,7 +51,7 @@ filename: com.ikiapps.setupXcodeDerivedDataRamDisk.plist
 <plist version=1.0>
 <dict>
 <key>Label</key>
-<string>com.plisterine.setupDerivedData.plist</string>
+<string>com.ikiapps.setupXcodeDerivedDataRamDisk.plist</string>
 <key>ProgramArguments</key>
 <array>
 <string>/usr/bin/xcrun</string>
