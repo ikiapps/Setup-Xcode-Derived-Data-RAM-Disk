@@ -36,7 +36,7 @@ Create a file with the following content. **Edit it so that it fits your system.
 
 Give it a name like `com.ikiapps.setupXcodeDerivedDataRamDisk.plist` and copy it to
 
-	~/Library/LaunchAgents.
+	~/Library/LaunchAgents
 	
 The minimum permission for this property list launch agent file is that it is readable by you.
 
