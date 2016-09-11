@@ -25,7 +25,7 @@ import Foundation
 /**
 Create a Derived Data RAM disk for use by Xcode.
 The regex matching is designed for English language systems.
-Tested with OS X 10.11.5 (El Capitan) and Swift 2.2.
+Tested with OS X 10.11.6 (El Capitan) and Swift 3.0.
 
 The disk is mounted into the default path for Xcode's Derived Data path and will be used automatically
 by Xcode if the path is correct for the one set in Xcode's preferences.
@@ -81,14 +81,16 @@ let derivedDataPath = "\(home)/Library/Developer/Xcode/DerivedData"
  */
 func ramDiskExists() -> Bool
 {
-    let output = runTask("/sbin/mount", arguments: [])
-
+    let output = runTask(launchPath: "/sbin/mount", arguments: [])
     let regex: NSRegularExpression?
+
     do {
         regex = try NSRegularExpression(pattern: "/dev/disk.*Library/Developer/Xcode/DerivedData.*mounted",
-                                        options: NSRegularExpressionOptions.CaseInsensitive)
+                                        options: NSRegularExpression.Options.caseInsensitive)
 
-        let numberOfMatches = regex!.numberOfMatchesInString(output, options: [], range: NSMakeRange(0, output.characters.count))
+        let numberOfMatches = regex!.numberOfMatches(in: output,
+                                                     options: [],
+                                                     range: NSMakeRange(0, output.characters.count))
 
         if numberOfMatches == 1 {
             print("RAM disk is already mounted.\n")
@@ -110,23 +112,24 @@ func ramDiskExists() -> Bool
  */
 func createRamDisk(blocks: Int) -> Bool
 {
-    let output = runTask("/usr/bin/hdid", arguments: ["-nomount", "ram://\(blocks)"])
+    let output = runTask(launchPath: "/usr/bin/hdid", arguments: ["-nomount", "ram://\(blocks)"])
     let allOutput = NSMakeRange(0, output.characters.count)
-
     let regex: NSRegularExpression?
+
     do {
-        regex = try NSRegularExpression(pattern: "/dev/disk(\\d+)", options: NSRegularExpressionOptions.CaseInsensitive)
-        let numberOfMatches = regex!.numberOfMatchesInString(output, options: [], range: allOutput)
+        regex = try NSRegularExpression(pattern: "/dev/disk(\\d+)", options: NSRegularExpression.Options.caseInsensitive)
+        let numberOfMatches = regex!.numberOfMatches(in: output, options: [], range: allOutput)
 
         print("output \(output)")
 
         if numberOfMatches == 1 {
-            let matches = regex?.matchesInString(output, options: [], range: allOutput)
+            let matches = regex?.matches(in: output, options: [], range: allOutput)
 
             for match in matches! {
-                let matchRange: NSRange = match.rangeAtIndex(1)
-                let disk = output.substringWithRange(output.startIndex.advancedBy(matchRange.location) ..< output.startIndex.advancedBy(matchRange.location + matchRange.length))
-                makeFilesystemForDisk(disk)
+                let matchRange: NSRange = match.rangeAt(1)
+                let disk = output.substring(with: output.index(output.startIndex, offsetBy: matchRange.location) ..<
+                    output.index(output.startIndex, offsetBy: (matchRange.location + matchRange.length)))
+                makeFilesystemOn(disk: disk)
                 addRamDiskToSpotlight()
             }
         } else {
@@ -140,49 +143,58 @@ func createRamDisk(blocks: Int) -> Bool
     return true
 }
 
-func makeFilesystemForDisk(disk: String)
+func makeFilesystemOn(disk: String)
 {
     let drive = "/dev/rdisk\(disk)"
-    let output = runTask("/sbin/newfs_hfs", arguments: ["-v", "DerivedData", drive])
+    let output = runTask(launchPath: "/sbin/newfs_hfs",
+                         arguments: ["-v", "DerivedData", drive])
 
     print(output)
 
-    mountRamDisk(drive)
+    mountRamDisk(drive: drive)
 }
 
 func mountRamDisk(drive: String)
 {
-    let output = runTask("/usr/sbin/diskutil", arguments: ["mount", "-mountPoint", derivedDataPath, drive])
+    let output = runTask(launchPath: "/usr/sbin/diskutil",
+                         arguments: ["mount", "-mountPoint", derivedDataPath, drive])
 
     print(output)
 }
 
 /// Add to Spotlight so that Instruments can find symbols.
-func addRamDiskToSpotlight() {
-    let output = runTask("/usr/bin/mdutil", arguments: [derivedDataPath, "-i", "on"])
+func addRamDiskToSpotlight()
+{
+    let output = runTask(launchPath: "/usr/bin/mdutil",
+                         arguments: [derivedDataPath, "-i", "on"])
 
     print(output)
 }
 
 func runTask(launchPath: String, arguments: [String]) -> String
 {
-    let task = NSTask()
+    let task = Process()
     task.launchPath = launchPath
     task.arguments = arguments
 
-    let pipe = NSPipe()
+    let pipe = Pipe()
     task.standardOutput = pipe
     task.launch()
 
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
 
-    return NSString(data: data, encoding: NSUTF8StringEncoding) as! String
+    return NSString(data: data, encoding: String.Encoding.utf8.rawValue) as! String
 }
 
 print("Setting up RAM disk for Xcode.\n")
 
 if !ramDiskExists() {
-    createRamDisk(RAMDISK_GB * 1024 * 2048)
+    let result = createRamDisk(blocks: RAMDISK_GB * 1024 * 2048)
+    if result {
+        print("Created RAM disk.")
+    } else {
+        print("Unable to create RAM disk.")
+    }
 } else {
     print("RAM disk for Derived Data already exists.")
 }
