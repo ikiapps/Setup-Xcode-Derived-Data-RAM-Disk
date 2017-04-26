@@ -182,7 +182,7 @@ func runTask(launchPath: String,
     task.launch()
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
 
-    return NSString(data: data, encoding: String.Encoding.utf8.rawValue) as! String;
+    return String(data: data, encoding: String.Encoding.utf8)!
 }
 
 print("Setting up RAM disk for Xcode.\n")
