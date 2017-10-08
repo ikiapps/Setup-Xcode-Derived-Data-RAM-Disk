@@ -1,6 +1,6 @@
 #!/usr/bin/env xcrun swift
 
-// SetupXcodeDerivedDataRamDisk 2.0.0
+// SetupXcodeDerivedDataRamDisk 2.1.0
 //
 // Copyright (c) 2017 ikiApps LLC.
 //
@@ -27,11 +27,11 @@ import Foundation
 /**
 Create a Derived Data RAM disk for use by Xcode.
 The regex matching is designed for English language systems.
-Tested with OS X 10.11.6 (El Capitan) and Swift 3.0.2.
+Tested with OS X 10.12.6 (Sierra) and Swift 4.0.
 
 The disk is mounted into the default path for Xcode's Derived Data path and will be used automatically
 by Xcode if the path is correct for the one set in Xcode's preferences.
- 
+
 This script can be added as a startup agent inside ~/Library/LaunchAgents.
 
 ** BE SURE TO CHANGE USERNAME BELOW TO MATCH YOUR USERNAME. **
@@ -68,7 +68,7 @@ filename: com.ikiapps.setupXcodeDerivedDataRamDisk.plist
 -------------------------------------------------------------------
 
 The launch agent can be tested with:
- 
+
 launchctl load com.ikiapps.setupXcodeDerivedDataRamDisk.plist
 
 */
@@ -81,29 +81,30 @@ let derivedDataPath = "\(home)/Library/Developer/Xcode/DerivedData"
 /// - returns: Bool true if the ram disk already exists.
 func ramDiskExists() -> Bool
 {
-    let output = runTask(launchPath: "/sbin/mount", arguments: [])
+    let output = runTask(launchPath: "/sbin/mount",
+                         arguments: [])
     let regex: NSRegularExpression?
 
-    do {
+    do
+    {
         regex = try NSRegularExpression(pattern: "/dev/disk.*Library/Developer/Xcode/DerivedData.*mounted",
                                         options: NSRegularExpression.Options.caseInsensitive)
-
         let numberOfMatches = regex!.numberOfMatches(in: output,
                                                      options: [],
-                                                     range: NSMakeRange(0, output.characters.count))
-
-        if numberOfMatches == 1 {
+                                                     range: NSMakeRange(0,
+                                                                        output.characters.count))
+        if numberOfMatches == 1
+        {
             print("RAM disk is already mounted.\n")
             print(output)
-
-            return true;
+            return true
         }
     } catch let error as NSError {
         print("error: \(error.localizedDescription)")
         assert (false)
     }
 
-    return false;
+    return false
 }
 
 /// - parameter Int for number of blocks to use for the ram disk.
@@ -115,7 +116,8 @@ func createRamDisk(blocks: Int) -> Bool
     let allOutput = NSMakeRange(0, output.characters.count)
     let regex: NSRegularExpression?
 
-    do {
+    do
+    {
         regex = try NSRegularExpression(pattern: "/dev/disk(\\d+)",
                                         options: NSRegularExpression.Options.caseInsensitive)
         let numberOfMatches = regex!.numberOfMatches(in: output,
@@ -123,28 +125,27 @@ func createRamDisk(blocks: Int) -> Bool
                                                      range: allOutput)
         print("output \(output)")
 
-        if numberOfMatches == 1 {
+        if numberOfMatches == 1
+        {
             let matches = regex?.matches(in: output, options: [],
                                          range: allOutput)
-
-            for match in matches! {
-                let matchRange: NSRange = match.rangeAt(1)
-                let disk = output.substring(with: output.index(output.startIndex,
-                                                               offsetBy: matchRange.location) ..<
-                                                  output.index(output.startIndex,
-                                                               offsetBy: (matchRange.location + matchRange.length)))
-                makeFilesystemOn(disk: disk)
+            for match in matches!
+            {
+                let matchRange: NSRange = match.range(at: 1)
+                let disk = output[output.index(output.startIndex, offsetBy: matchRange.location) ..<
+                                  output.index(output.startIndex, offsetBy: (matchRange.location + matchRange.length))]
+                makeFilesystemOn(disk: String(disk))
                 addRamDiskToSpotlight()
             }
         } else {
-            return false;
+            return false
         }
     } catch let error as NSError {
         print("error: \(error.localizedDescription)")
         assert (false)
     }
 
-    return true;
+    return true
 }
 
 func makeFilesystemOn(disk: String)
@@ -181,16 +182,21 @@ func runTask(launchPath: String,
     task.standardOutput = pipe
     task.launch()
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
-
-    return String(data: data, encoding: String.Encoding.utf8)!
+    return String(data: data,
+                  encoding: String.Encoding.utf8)!
 }
+
+// ------------------------------------------------------------
+// MARK: - Main Program
+// ------------------------------------------------------------
 
 print("Setting up RAM disk for Xcode.\n")
 
-if !ramDiskExists() {
+if !ramDiskExists()
+{
     let result = createRamDisk(blocks: RAMDISK_GB * 1024 * 2048)
-
-    if result {
+    if result
+    {
         print("Created RAM disk.")
     } else {
         print("Unable to create RAM disk.")
