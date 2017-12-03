@@ -88,11 +88,11 @@ func ramDiskExists() -> Bool
     do
     {
         regex = try NSRegularExpression(pattern: "/dev/disk.*Library/Developer/Xcode/DerivedData.*mounted",
-                                        options: NSRegularExpression.Options.caseInsensitive)
+                                        options: .caseInsensitive)
         let numberOfMatches = regex!.numberOfMatches(in: output,
                                                      options: [],
                                                      range: NSMakeRange(0,
-                                                                        output.characters.count))
+                                                                        output.count))
         if numberOfMatches == 1
         {
             print("RAM disk is already mounted.\n")
@@ -113,13 +113,13 @@ func createRamDisk(blocks: Int) -> Bool
 {
     let output = runTask(launchPath: "/usr/bin/hdid",
                          arguments: ["-nomount", "ram://\(blocks)"])
-    let allOutput = NSMakeRange(0, output.characters.count)
+    let allOutput = NSMakeRange(0, output.count)
     let regex: NSRegularExpression?
 
     do
     {
         regex = try NSRegularExpression(pattern: "/dev/disk(\\d+)",
-                                        options: NSRegularExpression.Options.caseInsensitive)
+                                        options: .caseInsensitive)
         let numberOfMatches = regex!.numberOfMatches(in: output,
                                                      options: [],
                                                      range: allOutput)
