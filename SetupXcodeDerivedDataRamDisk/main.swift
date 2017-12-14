@@ -157,7 +157,8 @@ func makeFilesystemOn(disk: String)
     mountRamDisk(drive: drive)
 }
 
-func ensureDerivedData() {
+func ensureDerivedData()
+{
     let output = runTask(launchPath: "/bin/mkdir",
                          arguments: ["-p", derivedDataPath])
     print(output)
