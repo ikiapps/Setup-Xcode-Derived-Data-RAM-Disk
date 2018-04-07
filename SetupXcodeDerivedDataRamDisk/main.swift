@@ -1,8 +1,8 @@
 #!/usr/bin/env xcrun swift
 
-// SetupXcodeDerivedDataRamDisk 2.1.0
+// SetupXcodeDerivedDataRamDisk 2.2.0
 //
-// Copyright (c) 2017 ikiApps LLC.
+// Copyright (c) 2018 ikiApps LLC.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import Foundation
 /**
 Create a Derived Data RAM disk for use by Xcode.
 The regex matching is designed for English language systems.
-Tested with OS X 10.12.6 (Sierra) and Swift 4.0.
+Tested with OS X 10.13.4 (High Sierra) and Swift 4.1.
 
 The disk is mounted into the default path for Xcode's Derived Data path and will be used automatically
 by Xcode if the path is correct for the one set in Xcode's preferences.
@@ -84,7 +84,6 @@ func ramDiskExists() -> Bool
     let output = runTask(launchPath: "/sbin/mount",
                          arguments: [])
     let regex: NSRegularExpression?
-
     do
     {
         regex = try NSRegularExpression(pattern: "/dev/disk.*Library/Developer/Xcode/DerivedData.*mounted",
@@ -103,7 +102,6 @@ func ramDiskExists() -> Bool
         print("error: \(error.localizedDescription)")
         assert (false)
     }
-
     return false
 }
 
@@ -115,7 +113,6 @@ func createRamDisk(blocks: Int) -> Bool
                          arguments: ["-nomount", "ram://\(blocks)"])
     let allOutput = NSMakeRange(0, output.count)
     let regex: NSRegularExpression?
-
     do
     {
         regex = try NSRegularExpression(pattern: "/dev/disk(\\d+)",
@@ -124,7 +121,6 @@ func createRamDisk(blocks: Int) -> Bool
                                                      options: [],
                                                      range: allOutput)
         print("output \(output)")
-
         if numberOfMatches == 1
         {
             let matches = regex?.matches(in: output, options: [],
@@ -144,7 +140,6 @@ func createRamDisk(blocks: Int) -> Bool
         print("error: \(error.localizedDescription)")
         assert (false)
     }
-
     return true
 }
 
@@ -199,7 +194,6 @@ func runTask(launchPath: String,
 // ------------------------------------------------------------
 
 print("Setting up RAM disk for Xcode.\n")
-
 if !ramDiskExists()
 {
     let result = createRamDisk(blocks: RAMDISK_GB * 1024 * 2048)

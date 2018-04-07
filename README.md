@@ -8,6 +8,16 @@ The reason this works is because the RAM disk is mounted to the default path for
 
 ## Installation
 
+The install path is defined in the build settings under `INSTALL_PATH`. This is where the binary product will be copied every time the project is built. A default path of `~/bin` has been set.
+
+**Therefore, the following steps should be completed to build and install the compiled version of the script.**
+
+* If needed, change the size of `RAMDISK_GB` in `main.swift`
+* If needed, change the install path under Targets > SetupXcodeDerivedDataRamDisk > Build Settings > Installation Directory
+* Build the project
+
+## Alternative installation
+
 Copy `main.swift` to a local path of your choosing such as
 
 	~/bin/setupXcodeDerivedDataRAMDisk.swift
