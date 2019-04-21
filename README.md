@@ -2,19 +2,19 @@
 
 Instead of having Xcode’s Derived Data be based in a spinning disk or solid-state drive, moving it to a RAM disk can make the performance of Xcode build operations *as fast as possible* and make it so that your Derived Data content is continually freshened.
 
-I’ve crafted a script in Swift 4 to perform the necessary configuration. I start the script in a launch agent that runs at startup so that my RAM disk is always available. Returning to a standard Xcode configuration simply requires ejecting the RAM disk.
+I’ve crafted a script in Swift to perform the necessary configuration. I start the script in a launch agent that runs at startup so that my RAM disk is always available. Returning to a standard Xcode configuration simply requires ejecting the RAM disk.
 
-The reason this works is because the RAM disk is mounted to the default path for the DerivedData folder that Xcode uses. You can verify this path in Xcode 9 under Locations in its preferences.
+The reason this works is because the RAM disk is mounted to the default path for the DerivedData folder that Xcode uses. You can verify this path in Xcode under Locations in Preferences.
 
 ## Installation
 
-The install path is defined in the build settings under `INSTALL_PATH`. This is where the binary product will be copied every time the project is built. A default path of `~/bin` has been set.
+The install path is defined in the build settings under `INSTALL_DIR`. This is where the binary product will be copied every time the project is built. A default path of `$(HOME)/bin` has been set.  This value is set by two settings in Xcode's build settings: `INSTALL_ROOT` and `INSTALL_PATH`.
 
 **Therefore, the following steps should be completed to build and install the compiled version of the script.**
 
 * If needed, change the size of `RAMDISK_GB` in `main.swift`
-* If needed, change the install path under Targets > SetupXcodeDerivedDataRamDisk > Build Settings > Installation Directory
-* Build the project
+* If needed, change the install path under Targets > SetupXcodeDerivedDataRamDisk > Build Settings > Installation Build Products Location + Installation Directory 
+* Build the project in Xcode
 
 ## Alternative installation
 
@@ -26,7 +26,7 @@ Make it executable using `chmod +x ~/bin/setupXcodeDerivedDataRAMDisk.swift`.
 
 ## Run at startup
 
-Create a file with the following content. **Edit it so that it fits your system. Replace ${INSERT_YOUR_USERNAME} with your username.**
+Create a file with the following content. **Edit it so that it fits your system. Replace ${INSERT_YOUR_USERNAME} with your username. Add `.swift` to the filename if using the text-based script.** 
 
     <?xml version=1.0 encoding=UTF-8?>
     <!DOCTYPE plist PUBLIC -//Apple//DTD PLIST 1.0//EN http://www.apple.com/DTDs/PropertyList-1.0.dtd>
@@ -37,7 +37,7 @@ Create a file with the following content. **Edit it so that it fits your system.
     <key>ProgramArguments</key>
     <array>
     <string>/usr/bin/xcrun</string>
-    <string>/Users/${INSERT_YOUR_USERNAME}/bin/setupXcodeDerivedDataRAMDisk.swift</string>
+    <string>/Users/${INSERT_YOUR_USERNAME}/bin/setupXcodeDerivedDataRAMDisk</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
@@ -56,4 +56,4 @@ The agent can be started manually using
 
 	launchctl load com.ikiApps.setupXcodeDerivedDataRamDisk.plist
 	
-If everything went well, the script will now run every time you login. You can see the mounted RAM disk in the Finder when it is available. It will also be available in the list of mounts using the ‘mount’ or ‘df’ command.
+If everything went well, the script will now run every time you login. You can see the mounted RAM disk in the Finder when it is available. It will also be available in the list of mounts using the `mount` or `df` command.
