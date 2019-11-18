@@ -109,8 +109,8 @@ func ramDiskExists() throws -> Bool
 /// - returns: Bool true if the creation of the ram disk is successful.
 func createRamDisk(blocks: Int) throws -> Bool
 {
-    let output = try runTask(launchPath: "/usr/bin/hdid",
-                             arguments: ["-nomount", "ram://\(blocks)"])
+    let output = try runTask(launchPath: "/usr/bin/hdiutil",
+                             arguments: ["attach", "-nomount", "ram://\(blocks)"])
     let allOutput = NSMakeRange(0, output.count)
     let regex = try NSRegularExpression(pattern: "/dev/disk(\\d+)", options: .caseInsensitive)
     print("output \(output)")
