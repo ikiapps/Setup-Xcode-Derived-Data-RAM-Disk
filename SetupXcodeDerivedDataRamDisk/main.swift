@@ -78,11 +78,18 @@ launchctl load ~/Library/LaunchAgents/com.ikiapps.setupXcodeDerivedDataRamDisk.p
 
 */
 
+/// File systems:
+enum FileSystemType {
+    case apfs
+    case hfsPlus
+}
+
 /// Constants:
 let RAMDISK_GB = 4 // Set the number of gigabytes for the RAM disk here!
 let home = NSHomeDirectory()
 let derivedDataPath = "\(home)/Library/Developer/Xcode/DerivedData"
 let encoding: String.Encoding = .utf8
+let fileSystem = FileSystemType.apfs
 
 /// Error cases:
 enum RamDiskSetupError: Error {
@@ -130,10 +137,30 @@ func createRamDisk(blocks: Int) throws -> Bool
 
 func makeFilesystemOn(disk: String) throws
 {
-    let drive = "/dev/rdisk\(disk)"
-    let output = try runTask(launchPath: "/sbin/newfs_hfs",
+    var drive = "/dev/rdisk\(disk)"
+    var output: String!
+    switch fileSystem {
+    case .apfs:
+        output = try runTask(launchPath: "/usr/sbin/diskutil",
+                             arguments: ["ap", "createContainer", drive])
+        print(output!)
+        let apfsMsg = "Disk from APFS operation: "
+        let regex = try NSRegularExpression(pattern: "\(apfsMsg)[[:alnum:]]+\n", options: .caseInsensitive)
+        var allOutput = NSMakeRange(0, output.count)
+        var matchRange = regex.firstMatch(in: output, options: [], range: allOutput)!.range
+        drive = String(output[output.index(output.startIndex, offsetBy: (matchRange.location + apfsMsg.count)) ..<
+            output.index(output.startIndex, offsetBy: (matchRange.location + matchRange.length - 1))])
+        output = try runTask(launchPath: "/usr/sbin/diskutil",
+                             arguments: ["ap", "addVolume", drive, "APFS", "DerivedData", "-nomount"])
+        allOutput = NSMakeRange(0, output.count)
+        matchRange = regex.firstMatch(in: output, options: [], range: allOutput)!.range
+        drive = String(output[output.index(output.startIndex, offsetBy: (matchRange.location + apfsMsg.count)) ..<
+            output.index(output.startIndex, offsetBy: (matchRange.location + matchRange.length - 1))])
+    case .hfsPlus:
+        output = try runTask(launchPath: "/sbin/newfs_hfs",
                              arguments: ["-v", "DerivedData", drive])
-    print(output)
+    }
+    print(output!)
     try mountRamDisk(drive: drive)
 }
 
