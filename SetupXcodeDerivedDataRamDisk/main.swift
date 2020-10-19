@@ -1,8 +1,8 @@
 #!/usr/bin/env xcrun swift
 
-// SetupXcodeDerivedDataRamDisk 2.3.0
+// SetupXcodeDerivedDataRamDisk 2.3.1
 //
-// Copyright (c) 2019 ikiApps LLC.
+// Copyright (c) 2020 ikiApps LLC.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,40 +25,35 @@
 import Foundation
 
 /**
-Create a Derived Data RAM disk for use by Xcode.
-The regex matching is designed for English language systems.
-Tested with macOS 10.14.3 (Mojave), Xcode 10.2 and Swift 5.0.
+ Create a Derived Data RAM disk for use by Xcode.
+ The regular expression matching is for English language systems.
+ This script got tested with macOS 10.15.7 (Catalina), Xcode 12.01, and Swift 5.3.
 
-The disk is mounted into the default path for Xcode's Derived Data path and will
-be used automatically by Xcode if the path is corresponds to the one set in
-Xcode's preferences.
+ The disk is mounted into the default path for Xcode's Derived Data path and will be used
+ automatically by Xcode if it corresponds to the one set in Xcode's preferences.
 
-The console app, built in Xcode, can be added as a startup agent inside
-~/Library/LaunchAgents. The raw script itself can also be made executable like a
-shell script.
+ The console app, built with Xcode, can be added as a startup agent inside `~/Library/LaunchAgents`.
+ The raw script itself can also be made executable like a shell script.
 
-The path below refers to a bin directory contained in your home directory.
-This folder needs to be created if it does not already exist.
+ The path below refers to a bin directory contained in your home directory.
+ Create this folder if it does not already exist.
 
-The console app or script copied into that directory will need to have execute
-(+x) permissions. The property list inside LaunchAgents only requires read (+r)
-permissions to work. It is sufficient to simply copy the property list into the
-LaunchAgents directory. The directory itself will have to be created if it does
-not already exist.
+ The console app or script copied into that directory needs execute (+x) permissions. The property
+ list inside LaunchAgents only requires read (+r) permissions to work. It is sufficient to copy the
+ property list into the LaunchAgents directory. Create the directory if it does not already exist.
 
-Here is the content of an example property list (plist) that will have the RAM
-disk created at startup.
+ Here is the content of an example property list (plist) that will have the RAM disk created at startup.
 
-** REMEMBER TO CHANGE THE USERNAME BELOW TO MATCH YOUR USERNAME. **
+ ** REMEMBER TO CHANGE THE USERNAME BELOW TO MATCH YOUR USERNAME. **
 
-filename: com.ikiapps.setupXcodeDerivedDataRamDisk.plist
+Example filename: com.ikiApps.setupXcodeDerivedDataRamDisk.plist
 -------------------------------------------------------------------
 <?xml version=1.0 encoding=UTF-8?>
 <!DOCTYPE plist PUBLIC -//Apple//DTD PLIST 1.0//EN http://www.apple.com/DTDs/PropertyList-1.0.dtd>
 <plist version=1.0>
 <dict>
 <key>Label</key>
-<string>com.ikiapps.setupXcodeDerivedDataRamDisk.plist</string>
+<string>com.ikiApps.setupXcodeDerivedDataRamDisk.plist</string>
 <key>ProgramArguments</key>
 <array>
 <string>/usr/bin/xcrun</string>
@@ -72,14 +67,15 @@ filename: com.ikiapps.setupXcodeDerivedDataRamDisk.plist
 </plist>
 -------------------------------------------------------------------
 
-The launch agent can be tested with:
+Manually test the launch agent with:
 
-launchctl load ~/Library/LaunchAgents/com.ikiapps.setupXcodeDerivedDataRamDisk.plist
+launchctl load ~/Library/LaunchAgents/com.ikiApps.setupXcodeDerivedDataRamDisk.plist
 
 */
 
 /// File systems:
-enum FileSystemType {
+enum FileSystemType
+{
     case apfs
     case hfsPlus
 }
@@ -92,7 +88,8 @@ let encoding: String.Encoding = .utf8
 let fileSystem = FileSystemType.apfs
 
 /// Error cases:
-enum RamDiskSetupError: Error {
+enum RamDiskSetupError: Error
+{
     case taskFailed
 }
 

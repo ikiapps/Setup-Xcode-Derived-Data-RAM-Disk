@@ -1,32 +1,34 @@
 # Get the Fastest Build Times in Xcode
 
-Instead of having Xcode’s Derived Data be based in a spinning disk or solid-state drive, moving it to a RAM disk can make the performance of Xcode build operations *as fast as possible* and make it so that your Derived Data content is continually freshened.
+Instead of having Xcode’s Derived Data based in a spinning disk or solid-state drive, move it to a RAM disk. Then, the performance of Xcode build operations run *as fast as possible.* A side benefit is the contents do not persist across reboots and, therefore, do not accumulate excessively.
 
-I’ve crafted a script in Swift to perform the necessary configuration. I start the script in a launch agent that runs at startup so that my RAM disk is always available. Returning to a standard Xcode configuration simply requires ejecting the RAM disk.
+I have crafted a script in Swift to perform the necessary configuration for you. It can automatically start using a launch agent at startup, so the RAM disk is always available. Returning to a standard Xcode configuration requires ejecting the RAM disk.
 
-The reason this works is because the RAM disk is mounted to the default path for the DerivedData folder that Xcode uses. You can verify this path in Xcode under Locations in Preferences.
+It works because the RAM disk mounts to the default path for the DerivedData folder that Xcode uses. You can verify this path in Xcode under Locations in Preferences. The RAM disk gets used by command-line builds and is thereby compatible with alternative IDEs such as AppCode.
 
 ## Installation
 
-The install path is defined in the build settings under `INSTALL_DIR`. This is where the binary product will be copied every time the project is built. A default path of `$(HOME)/bin` has been set.  This value is set by two settings in Xcode's build settings: `INSTALL_ROOT` and `INSTALL_PATH`.
+Define the install path in the build settings under `INSTALL_DIR`. The binary product is copied to this location when building the project. A default path of `$(HOME)/bin` is set. Configuration of this value is by two settings in Xcode's build settings: `INSTALL_ROOT` and `INSTALL_PATH`.
 
-**Therefore, the following steps should be completed to build and install the compiled version of the script.**
+**Complete the following steps to build and install the compiled version of the script.**
 
 * If needed, change the size of `RAMDISK_GB` in `main.swift`
-* If needed, change the install path under Targets > SetupXcodeDerivedDataRamDisk > Build Settings > Installation Build Products Location + Installation Directory 
+* If needed, change the install path under Targets > SetupXcodeDerivedDataRamDisk > Build Settings > Installation Build Products Location + Installation Directory
 * Build the project in Xcode
 
 ## Alternative installation
 
-Copy `main.swift` to a local path of your choosing such as
+Copy `main.swift` to a local path of your choosing, such as
 
-	~/bin/setupXcodeDerivedDataRAMDisk.swift
-	
-Make it executable using `chmod +x ~/bin/setupXcodeDerivedDataRAMDisk.swift`.
+    ~/bin/setupXcodeDerivedDataRAMDisk.swift
+
+Make it executable with
+
+    chmod +x ~/bin/setupXcodeDerivedDataRAMDisk.swift
 
 ## Run at startup
 
-Create a file with the following content. **Edit it so that it fits your system. Replace ${INSERT_YOUR_USERNAME} with your username. Add `.swift` to the filename if using the text-based script.** 
+Create a file with the following content. **Edit it to fit your system. Replace ${INSERT_YOUR_USERNAME} with your username. Add `.swift` to the filename if using the text-based script.**
 
     <?xml version=1.0 encoding=UTF-8?>
     <!DOCTYPE plist PUBLIC -//Apple//DTD PLIST 1.0//EN http://www.apple.com/DTDs/PropertyList-1.0.dtd>
@@ -46,14 +48,14 @@ Create a file with the following content. **Edit it so that it fits your system.
     </dict>
     </plist>
 
-Give it a name like `com.ikiApps.setupXcodeDerivedDataRamDisk.plist` and copy it to
+Give it a name, for example, `com.ikiApps.setupXcodeDerivedDataRamDisk.plist`, and copy it to
 
-	~/Library/LaunchAgents
-	
-The minimum permission for this property list launch agent file is that it is readable by you. That corresponds to a permission value of 0400 in chmod terms.
+    ~/Library/LaunchAgents
 
-The agent can be started manually using
+User readable is the minimum permission for the property list. That corresponds to a permission value of 0400 for chmod.
 
-	launchctl load com.ikiApps.setupXcodeDerivedDataRamDisk.plist
-	
-If everything went well, the script will now run every time you login. You can see the mounted RAM disk in the Finder when it is available. It will also be available in the list of mounts using the `mount` or `df` command.
+Make sure Xcode is not running, and manually test starting the agent with the following command:
+
+    launchctl load com.ikiApps.setupXcodeDerivedDataRamDisk.plist
+
+If everything went well, the script should now run every time you log in. You can see the mounted RAM disk in the Finder when it is available. It will also be available in the list of mounts using the `mount` or `df` command.
